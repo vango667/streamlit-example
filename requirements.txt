@@ -4,6 +4,4 @@ streamlit
 matplotlib
 Pillow
 numpy
-time
-os
 random
