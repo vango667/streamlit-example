@@ -1,38 +1,74 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
+# coding=utf-8
 import streamlit as st
+import matplotlib
+import SimpleITK as sitk
 
-"""
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+from PIL import Image
+import numpy as np
+import time
+import os
+import random
 
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+def main():
+    st.set_page_config(
+        page_title="ProST配准",  # 页面标题
+        page_icon=":rainbow:",  # icon
+    )
+    st.title('ProST配准')
+    mod = ''
+    if 'mod' not in st.session_state:
+        st.session_state['mod'] = '欢迎'
+    if st.button('开始配准'):
+        st.session_state['mod'] = '开始配准'
+    if st.button('开发者信息'):
+        st.session_state['mod'] = '开发者信息'
+    mod = st.session_state['mod']
+    if mod == '欢迎':
+        img_ls = os.listdir('assets/img')
+        img = random.choice(img_ls)
+        image = Image.open('assets/img/' + img)
+        st.image(image, caption=img[:img.find('.')])
+    if mod == '开始配准':
+        with st.form('欢迎光临'):
+            ct_file = st.file_uploader('上传CT图像（仅限nii.gz格式）', type=(['nii.gz']))
+            if ct_file is not None:
+                ct = ct_file.name
+                st.write(ct_file)
+                # ct_img = sitk.ReadImage(ct)
+                # ct_array = sitk.GetArrayFromImage(ct_img)
+            x_ray_file = st.file_uploader('上传X光图像（仅限nii.gz格式）', type=(['nii.gz']))
+            if x_ray_file is not None:
+                x_ray = x_ray_file.name
+                st.write(x_ray)
+            registration = st.form_submit_button("开始配准")
+            if registration:
+                st.success('配准成功!', icon="✅")
+                st.write('预测参数：[90, 0, 0, 1000, 0, 0]')
+                st.image(Image.open('../temp/result.gif'))
+        if st.button('返回'):
+            st.session_state['mod'] = '欢迎'
+            st._rerun()
+    if mod == '开发者信息':
+        st.markdown('开发者信息')
+        if st.button('返回'):
+            st.session_state['mod'] = '欢迎'
+            st._rerun()
+    # if st.button('退出'):
+    #     os.system('taskkill /im msedge.exe /F')
+    #     os.system('taskkill /im iexplore.exe /F')
+    #     os.system('taskkill /im sogouexplorer.exe /F')
+    #     os.system('taskkill /im The world .exe /F')
+    #     os.system('taskkill /im Firefox.exe /F')
+    #     os.system('taskkill /im opera.exe /F')
+    #     os.system('taskkill /im 360SE.exe /F')
+    #     os.system('taskkill /im Chrome.exe /F')
+    #     os.system('taskkill /im Safari.exe /F')
+    #     os.system('taskkill /im Maxthon.exe /F')
+    #     os.system('taskkill /im Netscape.exe /F')
 
-    Point = namedtuple('Point', 'x y')
-    data = []
 
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+if __name__ == '__main__':
+    main()

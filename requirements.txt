@@ -1,3 +1,9 @@
 altair
 pandas
 streamlit
+matplotlib
+PIL
+numpy
+time
+os
+random
